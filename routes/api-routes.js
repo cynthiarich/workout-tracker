@@ -12,8 +12,6 @@ module.exports = app => {
     })
 
     app.get("/api/workouts/range", (req, res) => {
-        console.log("============/api/workouts/range============")
-        console.log(req.body)
 
         db.Workout.find(req.body)
             .then(data => {

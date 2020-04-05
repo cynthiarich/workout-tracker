@@ -14,10 +14,7 @@ const today = moment();
 const currdow = today.day();
 
 async function initStats() {
-  console.log(moment().subtract(7, 'days').valueOf())
   let stats = await API.getWorkoutsInRange({ data: { day: { $lte: moment().subtract(7, 'days').valueOf() } } });
-  console.log("=============stats retrieved==========");
-  console.log(stats);
   consolidateStats(stats);
 
 }
@@ -77,7 +74,6 @@ function consolidateStats(data) {
           weightArr.push(exercise.weight);
         }
         //get dow and add total daily weight and duration
-        console.log(`${exercise.name} on ${moment(workout.day).day()}`)
         let dow = moment(workout.day).day();
         dowduration[dow] = dowduration[dow] + exercise.duration;
         if (exercise.type === "resistance"){
@@ -88,8 +84,6 @@ function consolidateStats(data) {
     }
 
   });
-  console.log("==============dowweight=============")
-  console.log(dowweight)
   //call the populate chart function with the three arrays
   populateChart(exerciseArr, durationArr, weightArr, dowduration, dowweight);
 }
