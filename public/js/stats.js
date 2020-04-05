@@ -1,10 +1,24 @@
 // get all workout data from back-end
 
+const dow = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+]
+
+const today = moment();
+const currdow = today.day();
+
 async function initStats() {
-  let stats = await API.getWorkoutsInRange({ data: {} });
+  console.log(moment().subtract(7, 'days').valueOf())
+  let stats = await API.getWorkoutsInRange({ data: { day: { $lte: moment().subtract(7, 'days').valueOf() } } });
   console.log("=============stats retrieved==========");
   console.log(stats);
-  populateChart(stats);
+  consolidateStats(stats);
 
 }
 
@@ -32,12 +46,52 @@ function generatePalette() {
 
   return arr;
 }
-function populateChart(data) {
-  //let durations = duration(data);
-  //let pounds = calculateTotalWeight(data);
-  let durations;
-  let pounds;
-  let workouts = workoutNames(data);
+
+function consolidateStats(data) {
+  let exerciseArr = [];
+  let durationArr = [];
+  let weightArr = [];
+  let dowduration = [0, 0, 0, 0, 0, 0, 0];
+  let dowweight = [0, 0, 0, 0, 0, 0, 0];
+
+  //loop over each workout
+  data.forEach(workout => {
+    //ignore it if it isn't in the last week
+    if (moment(workout.day).isAfter(moment().subtract(7, 'days'))) {
+      //within each workout, loop through exercises
+      workout.exercises.forEach(exercise => {
+        //for each exercise, look to see if it already exists in the temp array
+        if (exerciseArr.indexOf(exercise.name) != -1) {
+          //if so, get the index
+          let i = exerciseArr.indexOf(exercise.name);
+          //for the duration array, get the previous value at the same index
+          //then add the new value to it
+          durationArr[i] = durationArr[i] + exercise.duration;
+          //do the same thing for the weight array
+          weightArr[i] = weightArr[i] + exercise.weight;
+        }
+        else {
+          //if it doesn't already exist in the array, push all three to their respective arrays
+          exerciseArr.push(exercise.name);
+          durationArr.push(exercise.duration);
+          weightArr.push(exercise.weight);
+        }
+        //get dow and add total daily weight and duration
+        console.log(`${exercise.name} on ${moment(workout.day).day()}`)
+        let dow = moment(workout.day).day();
+        dowduration[dow] = dowduration[dow] + exercise.duration;
+        dowweight[dow] = dowweight[dow] + exercise.weight;
+      });
+    }
+
+  });
+
+  //call the populate chart function with the three arrays
+  populateChart(exerciseArr, durationArr, weightArr, dowduration, dowweight);
+}
+
+function populateChart(workouts, durations, pounds, dowduration, dowweight) {
+
   const colors = generatePalette();
 
   let line = document.querySelector("#canvas").getContext("2d");
@@ -48,21 +102,13 @@ function populateChart(data) {
   let lineChart = new Chart(line, {
     type: "line",
     data: {
-      labels: [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-      ],
+      labels: dow,
       datasets: [
         {
           label: "Workout Duration In Minutes",
           backgroundColor: "red",
           borderColor: "red",
-          data: durations,
+          data: dowduration,
           fill: false
         }
       ]
@@ -96,19 +142,11 @@ function populateChart(data) {
   let barChart = new Chart(bar, {
     type: "bar",
     data: {
-      labels: [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ],
+      labels: dow,
       datasets: [
         {
           label: "Pounds",
-          data: pounds,
+          data: dowweight,
           backgroundColor: [
             "rgba(255, 99, 132, 0.2)",
             "rgba(54, 162, 235, 0.2)",
@@ -185,42 +223,4 @@ function populateChart(data) {
       }
     }
   });
-}
-
-function duration(data) {
-  let durations = [];
-
-  data.forEach(workout => {
-    workout.exercises.forEach(exercise => {
-      console.log("=========workout.exercises forEach==========");
-      console.log(exercise.duration);
-      durations.push(exercise.duration);
-    });
-  });
-
-  return durations;
-}
-
-function calculateTotalWeight(data) {
-  let total = [];
-
-  data.forEach(workout => {
-    workout.exercises.forEach(exercise => {
-      total.push(exercise.weight);
-    });
-  });
-
-  return total;
-}
-
-function workoutNames(data) {
-  let workouts = [];
-
-  data.forEach(workout => {
-    workout.exercises.forEach(exercise => {
-      workouts.push(exercise.name);
-    });
-  });
-
-  return workouts;
 }
