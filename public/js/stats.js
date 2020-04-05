@@ -80,7 +80,10 @@ function consolidateStats(data) {
         console.log(`${exercise.name} on ${moment(workout.day).day()}`)
         let dow = moment(workout.day).day();
         dowduration[dow] = dowduration[dow] + exercise.duration;
-        dowweight[dow] = dowweight[dow] + exercise.weight;
+        if (exercise.type === "resistance"){
+          dowweight[dow] = dowweight[dow] + exercise.weight;
+        }
+        
       });
     }
 
