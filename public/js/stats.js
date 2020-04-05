@@ -1,18 +1,17 @@
 // get all workout data from back-end
 
-fetch("/api/workouts/range")
-  .then(response => {
-    return response.json();
-  })
-  .then(data => {
-    populateChart(data);
-  });
+async function initStats() {
+  let stats = await API.getWorkoutsInRange({ data: {} });
+  console.log("=============stats retrieved==========");
+  console.log(stats);
+  populateChart(stats);
 
+}
 
-API.getWorkoutsInRange()
+initStats();
 
-  function generatePalette() {
-    const arr = [
+function generatePalette() {
+  const arr = [
     "#003f5c",
     "#2f4b7c",
     "#665191",
@@ -32,10 +31,12 @@ API.getWorkoutsInRange()
   ]
 
   return arr;
-  }
+}
 function populateChart(data) {
-  let durations = duration(data);
-  let pounds = calculateTotalWeight(data);
+  //let durations = duration(data);
+  //let pounds = calculateTotalWeight(data);
+  let durations;
+  let pounds;
   let workouts = workoutNames(data);
   const colors = generatePalette();
 
@@ -160,7 +161,7 @@ function populateChart(data) {
     options: {
       title: {
         display: true,
-        text: "Excercises Performed"
+        text: "Duration of Excercises Performed"
       }
     }
   });
@@ -180,7 +181,7 @@ function populateChart(data) {
     options: {
       title: {
         display: true,
-        text: "Excercises Performed"
+        text: "Weight of Excercises Performed"
       }
     }
   });
@@ -191,6 +192,8 @@ function duration(data) {
 
   data.forEach(workout => {
     workout.exercises.forEach(exercise => {
+      console.log("=========workout.exercises forEach==========");
+      console.log(exercise.duration);
       durations.push(exercise.duration);
     });
   });
@@ -218,6 +221,6 @@ function workoutNames(data) {
       workouts.push(exercise.name);
     });
   });
-  
+
   return workouts;
 }
