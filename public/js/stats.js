@@ -1,13 +1,13 @@
 // get all workout data from back-end
 
 const dow = [
+  "Sunday",
   "Monday",
   "Tuesday",
   "Wednesday",
   "Thursday",
   "Friday",
-  "Saturday",
-  "Sunday"
+  "Saturday"
 ]
 
 const today = moment();
