@@ -85,7 +85,8 @@ function consolidateStats(data) {
     }
 
   });
-
+  console.log("==============dowweight=============")
+  console.log(dowweight)
   //call the populate chart function with the three arrays
   populateChart(exerciseArr, durationArr, weightArr, dowduration, dowweight);
 }
